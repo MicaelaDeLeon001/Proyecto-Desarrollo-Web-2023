@@ -1,0 +1,408 @@
+create database proyecto;
+use proyecto;
+
+CREATE TABLE persona (id int auto_increment, email varchar (50) not null,tipo_usr enum ('A','R','T') not null, contrasena varchar(200) not null, PRIMARY KEY (id, email));
+
+
+CREATE TABLE turista (
+    email varchar (50) not null,
+    id int not null,
+    alias varchar (30) not null,
+    hotel varchar(30) not null,
+    barrio varchar (25) not null,
+    departamento enum (
+        'Artigas',
+        'Canelones',
+        'Cerro Largo',
+        'Colonia',
+        'Durazno',
+        'Flores',
+        'Florida',
+        'Lavalleja',
+        'Maldonado',
+        'Montevideo',
+        'Paysandu',
+        'Rio Negro',
+        'Rivera',
+        'Rocha',
+        'Salto',
+        'San Jose',
+        'Soriano',
+        'Tacuarembo',
+        'Treinta y Tres'
+    ) not null,
+    FOREIGN key turista(id, email) REFERENCES persona(id, email),
+    PRIMARY KEY (id, email)
+);
+
+
+
+
+CREATE TABLE administrador (
+    email varchar (50) not null,
+    id int not null,
+    nombre varchar (30) not null,
+    apellido varchar (30) not null,
+    FOREIGN key administrador(id, email) REFERENCES persona(id, email),
+    PRIMARY KEY (id, email)
+);
+
+
+
+CREATE TABLE restaurante(
+    email varchar (50),
+    id int not null,
+    nombre varchar(30) not null,
+    tipo_restoran enum(
+        'Buffet',
+        'Comida rápida',
+        'Comida rápida y casual',
+        'Autor',
+        'Gourmet',
+        'Temático',
+        'Para llevar'
+    ) not null,
+    barrio VARCHAR (25) not null,
+    nro_puerta varchar(4) not null,
+    calle varchar (30) not null,
+    tel int(9) not null,
+    estrellas_m enum('Ninguna', '1', '2', '3') not null,
+    premio_siri enum('No', 'Sí') not null,
+    tenedor_oro enum('No', 'Sí') not null,
+    nacionalidad varchar (20) not null,
+    baja_log enum('No', 'Sí') not null,
+    alta enum ('No','Sí') not null,
+    FOREIGN KEY restaurante (id, email) REFERENCES persona (id, email),
+    PRIMARY KEY (id, email, nombre)
+);
+
+CREATE table menu (
+    id_restoran int not null,
+    email_restoran varchar(50) not null,
+    nombre_restoran varchar(30) not null,
+    id_menu int auto_increment,
+    nombre_menu varchar (30) not null,
+    tipo_comida enum('Saludable', 'Vegetariana', 'Vegana', 'Pastas', 'Pizza', 'Parrilla', 'Carnes') not null,
+    descripcion varchar(50) not null,
+    precio decimal (5, 2) not null,
+    FOREIGN KEY menu (id_restoran, email_restoran, nombre_restoran) REFERENCES restaurante (id, email, nombre),
+    PRIMARY KEY (id_menu, email_restoran, nombre_restoran, id_restoran)
+);
+
+
+CREATE TABLE periodo_estadia(fecha_inicio date not null, fecha_fin date not null, PRIMARY KEY (fecha_inicio, fecha_fin));
+
+CREATE TABLE tiene(
+    id_turista int not null,
+    email_turista varchar (50) not null,
+    fecha_inicio date not null,
+    fecha_fin date not null,
+    FOREIGN KEY tiene(id_turista, email_turista) REFERENCES turista(id, email),
+    FOREIGN KEY tienee(fecha_inicio, fecha_fin) REFERENCES periodo_estadia(fecha_inicio, fecha_fin),
+    PRIMARY KEY (
+        id_turista,
+        email_turista,
+        fecha_inicio,
+        fecha_fin
+    )
+);
+
+
+
+create table resena(
+    id_turista int not null,
+    email_turista varchar (50) not null,
+    fecha_inicio date not null,
+    fecha_fin date not null,
+    id_resena int auto_increment,
+    fecha date not null,
+    restoran_gen enum (
+        'Malo',
+        'Mediocre',
+        'Bueno',
+        'Muy bueno',
+        'Excelente'
+    ) not null,
+    atencion_cli enum (
+        'Malo',
+        'Mediocre',
+        'Bueno',
+        'Muy bueno',
+        'Excelente'
+    ) not null,
+    menu enum (
+        'Malo',
+        'Mediocre',
+        'Bueno',
+        'Muy bueno',
+        'Excelente'
+    ) not null,
+    instalacion enum (
+        'Malo',
+        'Mediocre',
+        'Bueno',
+        'Muy bueno',
+        'Excelente'
+    ) not null,
+    FOREIGN KEY resena(id_turista, email_turista) REFERENCES turista (id, email),
+    FOREIGN KEY resenia(fecha_inicio, fecha_fin) REFERENCES periodo_estadia (fecha_inicio, fecha_fin),
+    PRIMARY KEY (
+        id_resena,
+        email_turista,
+     	id_turista,
+     	fecha_inicio,
+     	fecha_fin
+    )
+);
+
+CREATE TABLE recibe(
+    id_turista int not null,
+    email_turista varchar (50) not null,
+    id_restoran int not null,
+    email_restoran varchar (50) not null,
+    nombre_restoran VARCHAR (30) not null,
+    id_resena int not null,
+    fecha_inicio date not null,
+    fecha_fin date not null,
+    FOREIGN KEY recibe(id_turista, email_turista) REFERENCES turista (id, email),
+    FOREIGN KEY recib(id_restoran, email_restoran, nombre_restoran) REFERENCES restaurante (id, email, nombre),
+	FOREIGN KEY recibee(id_resena) REFERENCES resena(id_resena),
+	FOREIGN KEY reci (fecha_inicio,fecha_fin) REFERENCES periodo_estadia(fecha_inicio,fecha_fin)
+);
+
+CREATE TABLE promocion(
+    codigo int(4) not null,
+    cantidad int(2) not null,
+    fecha_vencimiento date not null,
+    PRIMARY KEY(codigo)
+);
+
+create table obtiene (
+    codigo_promo int (4) not null,
+    id_restoran int not null,
+    email_restoran varchar(50) not null,
+    nombre_restoran varchar(30) not null,
+    id_menu int not null,
+    FOREIGN KEY obtiene(codigo_promo) REFERENCES promocion(codigo),
+    FOREIGN KEY obtien(id_restoran, email_restoran, nombre_restoran) REFERENCES restaurante (id, email, nombre),
+    FOREIGN KEY obtiene2(id_menu) REFERENCES menu(id_menu)
+);
+
+CREATE TABLE menu_imagenes (
+    id_menu_imagen int auto_increment,
+    id_menu int not null,
+    email_restoran varchar(50) not null,
+    nombre_restoran varchar(30) not null,
+    imagen varchar(200) not null,
+    PRIMARY KEY (id_menu_imagen),
+    FOREIGN KEY (id_menu, email_restoran, nombre_restoran) REFERENCES menu (id_menu, email_restoran, nombre_restoran)
+);
+
+
+
+
+
+
+
+
+
+/*                                              D M L                                                         */
+
+
+
+
+INSERT into persona values(1,'email@gmail.com','A','$2y$10$3N.uf8HYRE25Af/lgkhgCeWoBc3WPZnl1ics/nieRMWREdJG81Mbe');
+INSERT into persona values(2,'cmarx@gmail.com','A','$2y$10$3N.uf8HYRE25Af/lgkhgCeWoBc3WPZnl1ics/nieRMWREdJG81Mbe');
+INSERT into persona values(3,'tyllerswiftt@gmail.com','A','$2y$10$3N.uf8HYRE25Af/lgkhgCeWoBc3WPZnl1ics/nieRMWREdJG81Mbe');
+INSERT into persona values(4,'dquiroga@gmail.com','A','$2y$10$3N.uf8HYRE25Af/lgkhgCeWoBc3WPZnl1ics/nieRMWREdJG81Mbe');
+INSERT into persona values(5,'acuelloleal@gmail.com','A','$2y$10$3N.uf8HYRE25Af/lgkhgCeWoBc3WPZnl1ics/nieRMWREdJG81Mbe');
+INSERT into persona values(6,'cristinamartinez@gmail.com','A','$2y$10$3N.uf8HYRE25Af/lgkhgCeWoBc3WPZnl1ics/nieRMWREdJG81Mbe');
+INSERT into persona values(7,'valeria.leal@hotmail.com','A','$2y$10$3N.uf8HYRE25Af/lgkhgCeWoBc3WPZnl1ics/nieRMWREdJG81Mbe');
+INSERT into persona values(8,'santiagofort@gmail.com','A','$2y$10$3N.uf8HYRE25Af/lgkhgCeWoBc3WPZnl1ics/nieRMWREdJG81Mbe');
+INSERT into persona values(9,'jteperino@gmail.com','A','$2y$10$3N.uf8HYRE25Af/lgkhgCeWoBc3WPZnl1ics/nieRMWREdJG81Mbe');
+INSERT into persona values(10,'jjeongguk@gmail.com','A','$2y$10$3N.uf8HYRE25Af/lgkhgCeWoBc3WPZnl1ics/nieRMWREdJG81Mbe');
+INSERT into persona values(11,'RRRR@gmail.com','T','$2y$10$3N.uf8HYRE25Af/lgkhgCeWoBc3WPZnl1ics/nieRMWREdJG81Mbe' );
+INSERT into persona values(12,'dmtrsc@gmail.com','T','$2y$10$3N.uf8HYRE25Af/lgkhgCeWoBc3WPZnl1ics/nieRMWREdJG81Mbe' );
+INSERT into persona values(13,'ggarden@hotmail','T','$2y$10$3N.uf8HYRE25Af/lgkhgCeWoBc3WPZnl1ics/nieRMWREdJG81Mbe' );
+INSERT into persona values(14,'dday@hotmail.com','T','$2y$10$3N.uf8HYRE25Af/lgkhgCeWoBc3WPZnl1ics/nieRMWREdJG81Mbe');
+INSERT into persona values(15,'httpseokjin@gmail.com','T','$2y$10$3N.uf8HYRE25Af/lgkhgCeWoBc3WPZnl1ics/nieRMWREdJG81Mbe');
+INSERT into persona values(16,'abcdefghi@gmail.com','T','$2y$10$3N.uf8HYRE25Af/lgkhgCeWoBc3WPZnl1ics/nieRMWREdJG81Mbe');
+INSERT into persona values(17,'ttygiros@hotmail.com','T','$2y$10$3N.uf8HYRE25Af/lgkhgCeWoBc3WPZnl1ics/nieRMWREdJG81Mbe');
+INSERT into persona values(18,'zyxklll@gmail.com','T','$2y$10$3N.uf8HYRE25Af/lgkhgCeWoBc3WPZnl1ics/nieRMWREdJG81Mbe');
+INSERT into persona values(19,'xchilx@hotmail.com','T','$2y$10$3N.uf8HYRE25Af/lgkhgCeWoBc3WPZnl1ics/nieRMWREdJG81Mbe');
+INSERT into persona values(20,'sloweddd@gmail.com','T','$2y$10$3N.uf8HYRE25Af/lgkhgCeWoBc3WPZnl1ics/nieRMWREdJG81Mbe');
+INSERT into persona values(21,'lapasiva@gmail.com', 'R','$2y$10$3N.uf8HYRE25Af/lgkhgCeWoBc3WPZnl1ics/nieRMWREdJG81Mbe');
+INSERT into persona values(22,'mccdonald@gmail.com', 'R','$2y$10$3N.uf8HYRE25Af/lgkhgCeWoBc3WPZnl1ics/nieRMWREdJG81Mbe');
+INSERT into persona values(23,'burgerking@gmail.com', 'R','$2y$10$3N.uf8HYRE25Af/lgkhgCeWoBc3WPZnl1ics/nieRMWREdJG81Mbe');
+INSERT into persona values(24,'casamagnum@hotmail.com', 'R','$2y$10$3N.uf8HYRE25Af/lgkhgCeWoBc3WPZnl1ics/nieRMWREdJG81Mbe');
+INSERT into persona values(25,'francisrestoran@gmail.com', 'R','$2y$10$3N.uf8HYRE25Af/lgkhgCeWoBc3WPZnl1ics/nieRMWREdJG81Mbe');
+INSERT into persona values(26,'IlMondodellaPizza@gmail.com', 'R','$2y$10$3N.uf8HYRE25Af/lgkhgCeWoBc3WPZnl1ics/nieRMWREdJG81Mbe');
+INSERT into persona values(27,'tiobistro@hotmail.com', 'R','$2y$10$3N.uf8HYRE25Af/lgkhgCeWoBc3WPZnl1ics/nieRMWREdJG81Mbe');
+INSERT into persona values(28,'bottega@hotmail.com', 'R','$2y$10$3N.uf8HYRE25Af/lgkhgCeWoBc3WPZnl1ics/nieRMWREdJG81Mbe');
+INSERT into persona values(29,'laperdiz@gmail.com', 'R','$2y$10$3N.uf8HYRE25Af/lgkhgCeWoBc3WPZnl1ics/nieRMWREdJG81Mbe');
+INSERT into persona values(30,'donandress@gmail.com', 'R','$2y$10$3N.uf8HYRE25Af/lgkhgCeWoBc3WPZnl1ics/nieRMWREdJG81Mbe');
+
+
+/*                                                        Admin                                               */
+
+INSERT into administrador values('email@gmail.com', 1, 'Demian', 'Hesse');
+INSERT into administrador values('cmarx@gmail.com', 2, 'Carolina', 'Marx');
+INSERT into administrador values('tyllerswiftt@gmail.com', 3, 'Tyler', 'Swift');
+INSERT into administrador values('dquiroga@gmail.com', 4, 'Diego', 'Quiroga');
+INSERT into administrador values('acuelloleal@gmail.com', 5, 'Agustina', 'Cuello');
+INSERT into administrador values('cristinamartinez@gmail.com', 6, 'Cristina', 'Martinez');
+INSERT into administrador values('valeria.leal@hotmail.com', 7, 'Valeria', 'Leal');
+INSERT into administrador values('santiagofort@gmail.com', 8, 'Santiago', 'Fort');
+INSERT into administrador values('jteperino@gmail.com', 9, 'Joaquin', 'Teperino');
+INSERT into administrador values('jjeongguk@gmail.com', 10, 'Jeon', 'Jungkook');
+
+
+/*                                                        Turista                                               */
+
+insert into turista VALUES('RRRR@gmail.com',11,'xxxxx', 'Conrad', 'Pocitos', 'Montevideo');
+insert into turista VALUES('dmtrsc@gmail.com',12,'dmtrsc', 'Conrad', 'Pocitos', 'Montevideo');
+insert into turista VALUES('ggarden@hotmail.com',13,'Peter_xx', 'Conrad', 'Pocitos', 'Montevideo');
+insert into turista VALUES('dday@hotmail.com',14,'Noelia', 'Conrad', 'Pocitos', 'Montevideo');
+insert into turista VALUES('httpseokjin@gmail.com',15,'Angelina', 'Conrad', 'Pocitos', 'Montevideo');
+insert into turista VALUES('abcdefghi@gmail.com',16,'abcdef__i', 'Conrad', 'Pocitos', 'Montevideo');
+insert into turista VALUES('ttygiros@hotmail.com',17,'Carlos Guerrero', 'Conrad', 'Pocitos', 'Montevideo');
+insert into turista VALUES('zyxklll@gmail.com',18,'Maximiliano', 'Conrad', 'Pocitos', 'Montevideo');
+insert into turista VALUES('xchilx@hotmail.com',19,'Ethan', 'Conrad', 'Pocitos', 'Montevideo');
+insert into turista VALUES('sloweddd@gmail.com',20,'slowed life', 'Conrad', 'Pocitos', 'Montevideo');
+
+
+
+/*                                                        Restaurante                                              */
+
+insert into restaurante VALUES('lapasiva@gmail.com',21 , 'La Pasiva', 'Comida rápida', 'Pocitos', '920', 'Blvr. Juan Benito Blanco',27071700, 'Ninguna', 'No', 'No', 'Uruguaya', 'No', 'No');
+
+insert into restaurante VALUES('mccdonald@gmail.com',22 , 'Mcdonald', 'Comida rápida', 'Pocitos', '1290', 'Av. Luis Alberto de Herrera ',26282539 ,'Ninguna', 'No', 'No', 'Americana', 'No', 'No');
+
+insert into restaurante VALUES('burgerking@gmail.com',23 , 'Burger King', 'Comida rápida', 'Pocitos', '3494', 'Plácido Ellauri', 095925030, 'Ninguna', 'No', 'No', 'Americana', 'No', 'No');
+
+insert into restaurante VALUES('casamagnum@hotmail.com' ,24 , 'Casa Magnum', 'Gourmet', 'Carrasco', '2098', 'Av. Alfredo Arocena ',097071895, 'Ninguna', 'Si', 'No', 'Uruguaya', 'No', 'No');
+
+insert into restaurante VALUES('francisrestoran@gmail.com',25 , 'Francis', 'Gourmet', 'Punta carretas', '502', 'Luis de la Torre',097043191, 'Ninguna', 'No', 'No', 'Uruguaya', 'No', 'No');
+
+insert into restaurante VALUES('IlMondodellaPizza@gmail.com',26 , 'Il Mondo de lla Pizza', 'Comida rápida y casual', 'Buceo', '3401', 'Avda. 8 de Octubre',25069538, 'Ninguna', 'No', 'No', 'Uruguaya', 'No', 'No');
+
+insert into restaurante VALUES('tiobistro@hotmail.com',27 , 'Tio Bistro', 'Gourmet', 'Pocitos', '3764', 'Rizal',092070792, 'Ninguna', 'No', 'No', 'Uruguaya', 'No', 'No');
+
+insert into restaurante VALUES('bottega@hotmail.com',28 , 'Bottega', 'Gourmet', 'Pocitos', '2644', 'Luis B. Cavia',27087200, 'Ninguna', 'No', 'No', 'Italiano', 'No', 'No');
+
+insert into restaurante VALUES('laperdiz@gmail.com',29 , 'La Perdiz', 'Comida rápida y casual', 'Punta carretas', '350', ' Guipúzcoa',2711 8963, 'Ninguna', 'No', 'No', 'Uruguaya', 'No', 'No');
+
+insert into restaurante VALUES('donandress@gmail.com',30 , 'Don Andres', 'Comida rápida y casual', 'Prado', '1054', 'Av. Lucas Obes',2336 6418, 'Ninguna', 'No', 'No', 'Uruguaya', 'No', 'No');
+
+
+/*                                                       Menu                                                     */
+
+insert into menu VALUES(21, 'lapasiva@gmail.com', 'La Pasiva', 1 , 'Milanesa con papas fritas', 'Carnes', 'una milanesa para dos personas', 300.0 );
+insert into menu VALUES(22, 'mccdonald@gmail.com', 'Mcdonald', 2, 'Cuarto de libra', 'Carnes', 'Hamburguesa con queso', 200.34);
+insert into menu VALUES(23, 'burgerking@gmail.com', 'Burger King', 3, 'Ensalada Cheff', 'Saludable', 'Una ensalada', 179.0 );
+insert into menu VALUES(24, 'casamagnum@hotmail.com', 'Casa Magnum', 4, 'Pasta bolognesa', 'Pastas', 'Una pasta con salsa', 290.0 );
+insert into menu VALUES(25, 'francisrestoran@gmail.com', 'Francis', 5, 'Asado', 'Parrilla', 'Un asado para dos', 350.00);
+insert into menu VALUES(26, 'IlMondodellaPizza@gmail.com', 'Il Mondo de lla Pizza',6 , 'Pizza hawaiana', 'Pizza', 'Una pizza para dos', 175.0);
+insert into menu VALUES(27, 'tiobistro@hotmail.com', 'Tio Bistro',7 , 'Hamburguesa vegetariana', 'Vegetariana', 'Hamburguesa de lentajas', 230.0);
+insert into menu VALUES(28, 'bottega@hotmail.com', 'Bottega',8 , 'Milanesa de Soja', 'Vegana', 'Milanesa de Soja', 299.0 );
+insert into menu VALUES(29, 'laperdiz@gmail.com', 'La Perdiz',9 , 'Churrasco con puré', 'Carnes', 'Churrasco con puré', 255.60 );
+insert into menu VALUES(30, 'donandress@gmail.com', 'Don Andres', 10, 'Pizza muzzarella','Pizza', 'Pizza para dos', 200.00 );
+
+/*                                                        Estadia                                                 */
+
+INSERT INTO periodo_estadia VALUES('2023-08-21','2023-08-28');
+INSERT INTO periodo_estadia VALUES('2023-02-18','2023-02-28');
+INSERT INTO periodo_estadia VALUES('2023-03-21','2023-04-01');
+INSERT INTO periodo_estadia VALUES('2023-08-21','2023-08-23');
+INSERT INTO periodo_estadia VALUES('2023-08-21','2023-08-25');
+INSERT INTO periodo_estadia VALUES('2023-07-11','2023-07-18');
+INSERT INTO periodo_estadia VALUES('2023-09-04','2023-09-10');
+INSERT INTO periodo_estadia VALUES('2023-09-21','2023-09-24');
+INSERT INTO periodo_estadia VALUES('2023-10-20','2022-10-26');
+INSERT INTO periodo_estadia VALUES('2023-08-20','2023-08-28');
+
+/*                                                       Tiene                                                    */
+
+insert into tiene VALUES(11,'RRRR@gmail.com','2023-08-21','2023-08-28');
+insert into tiene VALUES(12,'dmtrsc@gmail.com','2023-02-18','2023-02-28');
+insert into tiene VALUES(13,'ggarden@hotmail.com','2023-03-21','2023-04-01');
+insert into tiene VALUES(14,'dday@hotmail.com','2023-08-21','2023-08-23');
+insert into tiene VALUES(15,'httpseokjin@gmail.com','2023-08-21','2023-08-25');
+insert into tiene VALUES(16,'abcdefghi@gmail.com','2023-07-11','2023-07-18');
+insert into tiene VALUES(17,'ttygiros@hotmail.com','2023-09-04','2023-09-10');
+insert into tiene VALUES(18,'zyxklll@gmail.com','2023-09-21','2023-09-24');
+insert into tiene VALUES(19,'xchilx@hotmail.com','2023-10-20','2022-10-26');
+insert into tiene VALUES(20,'sloweddd@gmail.com','2023-08-20','2023-08-28');
+
+/*                                                       Reseña                                                   */
+
+insert into resena VALUES(11,'RRRR@gmail.com','2023-08-21','2023-08-28',1,'2023-08-27' , 'Bueno','Bueno','Bueno','Bueno');
+insert into resena VALUES(12,'dmtrsc@gmail.com','2023-02-18','2023-02-28',2,'2023-02-19', 'Bueno','Bueno','Bueno','Bueno');
+insert into resena VALUES(13,'ggarden@hotmail.com','2023-03-21','2023-04-01',3,'2023-03-28', 'Bueno','Mediocre','Bueno','Bueno');
+insert into resena VALUES(14,'dday@hotmail.com','2023-08-21','2023-08-23',4,'2023-08-22', 'Bueno','Bueno','Bueno','Bueno');
+insert into resena VALUES(15,'httpseokjin@gmail.com','2023-08-21','2023-08-25',5,'2023-08-25', 'Bueno','Bueno','Bueno','Bueno');
+insert into resena VALUES(16,'abcdefghi@gmail.com','2023-07-11','2023-07-18',6,'2023-07-14', 'Bueno','Bueno','Mediocre','Bueno');
+insert into resena VALUES(17,'ttygiros@hotmail.com','2023-09-04','2023-09-10',7,'2023-09-05', 'Bueno','Bueno','Bueno','Bueno');
+insert into resena VALUES(18,'zyxklll@gmail.com','2023-09-21','2023-09-24',8,'2023-09-23', 'Bueno','Bueno','Bueno','Mediocre');
+insert into resena VALUES(19,'xchilx@hotmail.com','2023-10-20','2022-10-26',9,'2023-10-23', 'Mediocre','Bueno','Bueno','Bueno');
+insert into resena VALUES(20,'sloweddd@gmail.com','2023-08-20','2023-08-28',10,'2023-08-27', 'Bueno','Bueno','Bueno','Bueno');
+
+
+
+
+
+/*                                                       Recibe                                                   */
+
+insert into recibe VALUES(11,'RRRR@gmail.com',21, 'lapasiva@gmail.com', 'La Pasiva',1,'2023-08-21','2023-08-28');
+insert into recibe VALUES(12,'dmtrsc@gmail.com',22, 'mccdonald@gmail.com', 'Mcdonald',2,'2023-02-18','2023-02-28');
+insert into recibe VALUES(13,'ggarden@hotmail.com',23, 'burgerking@gmail.com', 'Burger King',3,'2023-03-21','2023-04-01');
+insert into recibe VALUES(14,'dday@hotmail.com',24, 'casamagnum@hotmail.com', 'Casa Magnum',4,'2023-08-21','2023-08-23');
+insert into recibe VALUES(15,'httpseokjin@gmail.com',25, 'francisrestoran@gmail.com', 'Francis',5,'2023-08-21','2023-08-25');
+insert into recibe VALUES(16,'abcdefghi@gmail.com',26, 'IlMondodellaPizza@gmail.com', 'Il Mondo de lla Pizza',6,'2023-07-11','2023-07-18');
+insert into recibe VALUES(17,'ttygiros@hotmail.com',27, 'tiobistro@hotmail.com', 'Tio bistro',7,'2023-09-04','2023-09-10');
+insert into recibe VALUES(18,'zyxklll@gmail.com',28, 'bottega@hotmail.com', 'Bottega',8,'2023-09-21','2023-09-24');
+insert into recibe VALUES(19,'xchilx@hotmail.com',29, 'laperdiz@gmail.com', 'La Perdiz',9,'2023-10-20','2022-10-26');
+insert into recibe VALUES(20,'sloweddd@gmail.com',30, 'donandress@gmail.com', 'Don Andres',10,'2023-08-20','2023-08-28');
+
+
+
+
+  
+/*                                                        promocion                                               */
+
+INSERT into promocion VALUES('1234', '30', '2023-09-30');
+INSERT into promocion VALUES('4321', '15', '2023-10-30');
+INSERT into promocion VALUES('4231', '10', '2023-09-25');
+INSERT into promocion VALUES('5678',' 37', '2023-09-30');
+INSERT into promocion VALUES('8765', '13', '2023-10-30');
+INSERT into promocion VALUES('8675', '18', '2023-09-29');
+INSERT into promocion VALUES('4756', '11', '2023-12-30');
+INSERT into promocion VALUES('8112', '12', '2023-08-25');
+INSERT into promocion VALUES('2354', '33', '2023-12-30');
+INSERT into promocion VALUES('6576', '19', '2023-11-30');
+INSERT into promocion VALUES('1111', '19', '2023-09-30');
+
+
+/*                                                       Obtiene                                                 */
+
+insert into obtiene values('1234', 21, 'lapasiva@gmail.com','La Pasiva',1);
+insert into obtiene values('4321', 22, 'mccdonald@gmail.com','Mcdonald',2);
+insert into obtiene values('5678', 23, 'burgerking@gmail.com','Burger King',3);
+insert into obtiene values('8765', 24, 'casamagnum@hotmail.com','Casa Magnum',4);
+insert into obtiene values('8675', 25, 'francisrestoran@gmail.com','Francis',5);
+insert into obtiene values('4756', 26, 'IlMondodellaPizza@gmail.com','Il Mondo de lla Pizza',6);
+insert into obtiene values('8112', 27, 'tiobistro@hotmail.com','Tio Bistro',7);
+insert into obtiene values('2354', 28, 'bottega@hotmail.com','Bottega',8);
+insert into obtiene values('6576', 29, 'laperdiz@gmail.com','La Perdiz',9);
+insert into obtiene values('1111', 30, 'donandress@gmail.com','Don Andres',10);
+
+
+/*                                                       menu_imagenes                                                */
+INSERT into menu_imagenes VALUES (1, 2, 'mccdonald@gmail.com', 'Mcdonald', 'images/cuarto.png');
+INSERT into menu_imagenes VALUES (2, 4, 'casamagnum@hotmail.com', 'Casa Magnum', 'images/pasta.png');
+INSERT into menu_imagenes VALUES (3, 3, 'burgerking@gmail.com', 'Burger King', 'images/cheff.jpg');
+INSERT into menu_imagenes VALUES (4, 5, 'francisrestoran@gmail.com', 'Francis', 'images/asado.jpg');
+INSERT into menu_imagenes VALUES (5, 1, 'lapasiva@gmail.com', 'La pasiva', 'images/napooo1.jpg');
+INSERT into menu_imagenes VALUES (6, 6, 'IlMondodellaPizza@gmail.com', 'Il Mondo de lla Pizza', 'images/pizza-hawaiana.jpg');
+INSERT into menu_imagenes VALUES (7, 7, 'tiobistro@hotmail.com', 'Tio Bistro', 'images/pizza-hawaiana.jpg');
+INSERT into menu_imagenes VALUES (8, 8, 'bottega@hotmail.com', 'Bottega', 'images/milanesa-soja.jpg');
